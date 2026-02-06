@@ -1,0 +1,101 @@
+# ZFS Property Reference for DGX Spark FellowOS
+# Use: zfs set <property>=<value> <dataset>
+
+# ============================================
+# Pool-level properties (zpool)
+# ============================================
+
+# ashift=12          - 4K sector alignment (optimal for NVMe)
+# autotrim=on        - Enable automatic TRIM for SSDs
+
+# ============================================
+# Dataset properties (zfs)
+# ============================================
+
+# --- Performance ---
+# atime=off          - Don't update access time (reduces writes)
+# relatime=on        - Update atime only if mtime/ctime changed (compromise)
+# recordsize=1M      - Large record size for big files (models)
+# recordsize=128K    - Default, good for mixed workloads
+# sync=standard      - Default sync behavior
+# sync=disabled      - DANGEROUS: no sync, data loss on crash
+
+# --- Compression ---
+# compression=lz4    - Fast, good ratio (recommended)
+# compression=zstd   - Better ratio, more CPU
+# compression=off    - No compression
+
+# --- Space Management ---
+# quota=500G         - Hard limit on space usage
+# reservation=500G   - Guaranteed space allocation
+# refquota=500G      - Quota excluding snapshots
+# refreservation=500G - Reservation excluding snapshots
+
+# --- Mounting ---
+# mountpoint=/path   - Where to mount
+# canmount=on        - Auto-mount
+# canmount=noauto    - Manual mount only (for root datasets)
+# canmount=off       - Container dataset, no mount
+
+# --- Security ---
+# acltype=posixacl   - POSIX ACLs (required for systemd)
+# xattr=sa           - Store xattrs in inode (performance)
+
+# --- Snapshots ---
+# snapdir=visible    - Show .zfs/snapshot directory
+# snapdir=hidden     - Hide .zfs/snapshot (default)
+
+# ============================================
+# Current FellowOS Dataset Configuration
+# ============================================
+
+# rpool/ROOT/dgxos
+#   mountpoint=/
+#   quota=500G
+#   reservation=500G
+#   compression=lz4
+#   atime=off
+#   xattr=sa
+#   acltype=posixacl
+
+# rpool/ai/models
+#   mountpoint=/ai/models
+#   compression=lz4
+#   recordsize=1M
+#   atime=off
+
+# rpool/ai/data
+#   mountpoint=/ai/data
+#   compression=lz4
+#   recordsize=1M
+#   atime=off
+
+# rpool/home
+#   mountpoint=/home
+#   compression=lz4
+#   atime=off
+
+# ============================================
+# Useful Commands
+# ============================================
+
+# Show all properties for a dataset:
+#   zfs get all rpool/ROOT/dgxos
+
+# Show specific property:
+#   zfs get compression rpool/ai/models
+
+# Set property:
+#   zfs set recordsize=1M rpool/ai/models
+
+# Show space usage:
+#   zfs list -o name,used,avail,refer,quota,reservation
+
+# Create snapshot:
+#   zfs snapshot rpool/ROOT/dgxos@before-update
+
+# Rollback to snapshot:
+#   zfs rollback rpool/ROOT/dgxos@before-update
+
+# List snapshots:
+#   zfs list -t snapshot -r rpool
